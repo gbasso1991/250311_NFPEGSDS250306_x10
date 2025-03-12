@@ -63,10 +63,10 @@ un_solo_fondo=1
 resto_fondo=1
 templog = 0
 N_espiras_bob_captora=1
-nombre='*bobN1FeSiO'
+nombre='*bobN1NFPEGSDS'
 Analisis_de_Fourier = 1 # sobre las señales, imprime espectro de señal muestra
 N_armonicos_impares = 10
-concentracion =10*1e3 #[concentracion]= g/m^3 (1 g/l == 1e3 g/m^3) (Default = 10000 g/m^3)
+concentracion =11.7*1e3 #[concentracion]= g/m^3 (1 g/l == 1e3 g/m^3) (Default = 10000 g/m^3)
 capsula_glucosa=0   # capsula para solventes organicos
 detector_ciclos_descartables=True #en funcion a Mag max para evitar guardar/promediar con ciclos in/out
 Ciclo_promedio=1
@@ -834,10 +834,95 @@ if Ciclo_promedio:
     ascii.write(ciclo_out,output_file,names=encabezado,overwrite=True,delimiter='\t',formats=formato)
 else:
     pass
+#%%#%% GUARDO RESULTADOS.TXT
+'''
+Guardo ASCII con los datos de todo el procesamiento:
+    |fname|time|Temp|Mr|Hc|Hmax|Mmax|f0|mag0|phi0|dphi0|SAR|Tau|N|xi_M_0|
+'''
+SAR_all = ufloat(np.mean(SAR),np.std(SAR))
+defasaje_all= ufloat(np.mean(Defasaje_1er_arm),np.std(Defasaje_1er_arm))
+Coercitividad_all = ufloat(np.mean(Coercitividad_kAm),np.std(Coercitividad_kAm))
+Remanencia_all = ufloat(np.mean(Remanencia_Am),np.std(Remanencia_Am))
+xi_all = ufloat(np.mean(xi_M_0),np.std(xi_M_0))
+tau_all= ufloat(np.mean(Tau),np.std(Tau))
+Mag_max_all=ufloat(np.mean(Mag_max),np.std(Mag_max))
+Mag_max_emu = Mag_max_all/(concentracion/1000)
+if templog:
+    col1 = time_m
+
+else:
+    col1= np.zeros_like(fnames_m)
+
+col0 = fnames_m
+col2 = temp_m
+col3 = Remanencia_Am
+col4 = Coercitividad_kAm
+col5 = Campo_maximo
+col5_bis = Mag_max
+col6 = Frec_fund
+col7 = Magnitud_1er_arm
+col8 = Defasaje_1er_arm
+col9 = SAR
+col10 = Tau
+col11 = long_arrays
+col12 = xi_M_0
+resultados_out=Table([col0, col1,col2,col3,col4,col5,col5_bis,col6,col7,col8,col9,col10,col11,col12])
+encabezado = ['Nombre_archivo','Time_m_(s)','Temperatura_(ºC)','Mr_(A/m)','Hc_(kA/m)',
+              'Campo_max_(A/m)','Mag_max_(A/m)','f0','mag0','dphi0','SAR_(W/g)','Tau_(ns)','N','xi_M_0']
+
+formato = {'Nombre_archivo':'%s' ,'Time_m_(s)':'%s','Temperatura_(ºC)':'%.2f',
+           'Mr_(A/m)':'%.2f','Hc_(kA/m)':'%.2f','Campo_max_(A/m)':'%.2f',
+           'Mag_max_(A/m)':'%.2f','f0':'%e','mag0':'%e','dphi0':'%e',
+           'SAR_(W/g)':'%.2f','Tau_(ns)':'%f','N':'%.0f','xi_M_0':'%.3e'}
+
+if Transicion_de_fase:
+    resultados_out.meta['comments'] = ['Configuracion:',
+                              f'Concentracion g/m^3_=_{concentracion}',
+                              f'C_Vs_to_Am_M_A/Vsm_=_{C_Vs_to_Am_magnetizacion}',
+                              f'pendiente_HvsI_1/m_=_{pendiente_HvsI}',
+                              f'ordenada_HvsI_A/m_=_{ordenada_HvsI}',
+                              f'frecuencia_ref_Hz_=_{frec_final_m}',
+                              '\nResultados:',
+                              f'tau_s_=_{tau_all:.2e}',
+                              f'dphi_rad_=_{defasaje_all:.2f}',
+                              f'SAR_W/g_=_{SAR_all:.2f}',
+                              f'Hc_kA/m_=_{Coercitividad_all:.2f}',
+                              f'Mr_A/m_=_{Remanencia_all:.2f}',
+                              f'Suceptibilidad_a_M=0_=_{xi_all:.4f}',
+                              f'Magnetizacion_max_emu/g_=_{Mag_max_emu}',
+                              f't_hasta_1er_file_=_{delta_0:.2f}',
+                              f'Duracion_T_Fase_=_{t_tf}',
+                              f'1er_file_T_Fase_=_{fnames_m[indx_TF[0][0]]}',
+                              f'last_file_T_Fase_=_{fnames_m[indx_TF[0][-1]]}\n']
+
+else:
+    resultados_out.meta['comments'] = ['Configuracion:',
+                              f'Concentracion g/m^3_=_{concentracion}',
+                              f'C_Vs_to_Am_M_A/Vsm_=_{C_Vs_to_Am_magnetizacion}',
+                              f'pendiente_HvsI_1/m_=_{pendiente_HvsI}',
+                              f'ordenada_HvsI_A/m_=_{ordenada_HvsI}',
+                              f'frecuencia_ref_Hz_=_{frec_final_m}',
+                              '\nResultados:',
+                              f'tau_ns_=_{tau_all:.2e}',
+                              f'dphi_rad_=_{defasaje_all:.2f}',
+                              f'SAR_W/g_=_{SAR_all:.2f}',
+                              f'Hc_kA/m_=_{Coercitividad_all:.2f}',
+                              f'Mr_A/m_=_{Remanencia_all:.2f}',
+                              f'Magnetizacion_max_emu/g_=_{Mag_max_emu}',
+                              f'Suceptibilidad_a_M=0_=_{xi_all:.3e}\n']
+
+
+
+output_file2=os.path.join(output_dir,os.path.commonprefix(list(fnames_m))+'_resultados.txt')
+ascii.write(resultados_out,output_file2,names=encabezado,overwrite=True,delimiter='\t',formats=formato)
+
 #%% PLOTEO TODOS LOS CICLOS FILTRADOS IMPAR
 cmap = mpl.colormaps['turbo']
 norm = plt.Normalize(temp_m.min(), temp_m.max())# Crear un rango de colores basado en las temperaturas y el cmap
 
+cuadro_1= fr'$\tau$ = {tau_all:.0f} ns'+f'\nSAR = {SAR_all:.0f} W/g\nH$_c$ = {Coercitividad_all:.1f} kA/m\nM$_r$ = {Remanencia_all:.1f} A/m'+'\nM$_{max}$'+f' = {Mag_max_emu:.1f}'+r' $\frac{emu}{g}$'
+
+ 
 if Analisis_de_Fourier==1:
     fig = plt.figure(figsize=(9,7),constrained_layout=True)
     ax = fig.add_subplot(1,1,1)
@@ -852,14 +937,22 @@ if Analisis_de_Fourier==1:
     
     if Ciclo_promedio:
         plt.plot(H_prom/1000,M_prom,'-.',c='tab:red',label=f'Ciclo promedio ({Num_ciclos_m} ciclos)')
-plt.legend(loc='lower right',fancybox=True)
+plt.legend(loc='lower right',fancybox=True,ncol=2)
 
 # Configurar la barra de colores
 sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
 sm.set_array([])  # Esto es necesario para que la barra de colores muestre los valores correctos
 plt.colorbar(sm, label='Temperatura', ax=ax)  # Agrega una etiqueta adecuada
 
-plt.text(0.10,0.80,f'{frec_nombre[0]/1000:>3.0f} kHz\n{round(np.mean(Campo_maximo)/1e3,2):>4.2f} kA/m',fontsize=20,bbox=dict(color='tab:orange',alpha=0.7),transform=ax.transAxes)
+
+plt.text(0.75,0.20,cuadro_1,
+         fontsize=14,bbox=dict(color='tab:green',alpha=0.7),transform=ax.transAxes,ha='center')
+
+
+
+
+plt.text(0.25,0.75,f'{frec_nombre[0]/1000:>3.0f} kHz\n{round(np.mean(Campo_maximo)/1e3,2):>4.2f} kA/m',
+         fontsize=20,bbox=dict(color='tab:orange',alpha=0.7),transform=ax.transAxes,ha='center')
 plt.grid()
 plt.xlabel('H (kA/m)',fontsize=15)
 plt.ylabel('M (A/m)',fontsize=15)
@@ -903,85 +996,6 @@ if Transicion_de_fase==1:
 else:
     print('\nNo se requiere calculo de transicion de fase.')
 
-#%% GUARDO RESULTADOS.TXT
-'''
-Guardo ASCII con los datos de todo el procesamiento:
-    |fname|time|Temp|Mr|Hc|Hmax|Mmax|f0|mag0|phi0|dphi0|SAR|Tau|N|xi_M_0|
-'''
-SAR_all = ufloat(np.mean(SAR),np.std(SAR))
-defasaje_all= ufloat(np.mean(Defasaje_1er_arm),np.std(Defasaje_1er_arm))
-Coercitividad_all = ufloat(np.mean(Coercitividad_kAm),np.std(Coercitividad_kAm))
-Remanencia_all = ufloat(np.mean(Remanencia_Am),np.std(Remanencia_Am))
-xi_all = ufloat(np.mean(xi_M_0),np.std(xi_M_0))
-tau_all= ufloat(np.mean(Tau),np.std(Tau))
-Mag_max_all=ufloat(np.mean(Mag_max),np.std(Mag_max))
-
-if templog:
-    col1 = time_m
-
-else:
-    col1= np.zeros_like(fnames_m)
-
-col0 = fnames_m
-col2 = temp_m
-col3 = Remanencia_Am
-col4 = Coercitividad_kAm
-col5 = Campo_maximo
-col5_bis = Mag_max
-col6 = Frec_fund
-col7 = Magnitud_1er_arm
-col8 = Defasaje_1er_arm
-col9 = SAR
-col10 = Tau
-col11 = long_arrays
-col12 = xi_M_0
-resultados_out=Table([col0, col1,col2,col3,col4,col5,col5_bis,col6,col7,col8,col9,col10,col11,col12])
-encabezado = ['Nombre_archivo','Time_m_(s)','Temperatura_(ºC)','Mr_(A/m)','Hc_(kA/m)',
-              'Campo_max_(A/m)','Mag_max_(A/m)','f0','mag0','dphi0','SAR_(W/g)','Tau_(ns)','N','xi_M_0']
-
-formato = {'Nombre_archivo':'%s' ,'Time_m_(s)':'%s','Temperatura_(ºC)':'%.2f',
-           'Mr_(A/m)':'%.2f','Hc_(kA/m)':'%.2f','Campo_max_(A/m)':'%.2f',
-           'Mag_max_(A/m)':'%.2f','f0':'%e','mag0':'%e','dphi0':'%e',
-           'SAR_(W/g)':'%.2f','Tau_(ns)':'%f','N':'%.0f','xi_M_0':'%.3e'}
-
-if Transicion_de_fase:
-    resultados_out.meta['comments'] = ['Configuracion:',
-                              f'Concentracion g/m^3_=_{concentracion}',
-                              f'C_Vs_to_Am_M_A/Vsm_=_{C_Vs_to_Am_magnetizacion}',
-                              f'pendiente_HvsI_1/m_=_{pendiente_HvsI}',
-                              f'ordenada_HvsI_A/m_=_{ordenada_HvsI}',
-                              f'frecuencia_ref_Hz_=_{frec_final_m}',
-                              '\nResultados:',
-                              f'tau_s_=_{tau_all:.2e}',
-                              f'dphi_rad_=_{defasaje_all:.2f}',
-                              f'SAR_W/g_=_{SAR_all:.2f}',
-                              f'Hc_kA/m_=_{Coercitividad_all:.2f}',
-                              f'Mr_A/m_=_{Remanencia_all:.2f}',
-                              f'Suceptibilidad_a_M=0_=_{xi_all:.4f}',
-                              f't_hasta_1er_file_=_{delta_0:.2f}',
-                              f'Duracion_T_Fase_=_{t_tf}',
-                              f'1er_file_T_Fase_=_{fnames_m[indx_TF[0][0]]}',
-                              f'last_file_T_Fase_=_{fnames_m[indx_TF[0][-1]]}\n']
-
-else:
-    resultados_out.meta['comments'] = ['Configuracion:',
-                              f'Concentracion g/m^3_=_{concentracion}',
-                              f'C_Vs_to_Am_M_A/Vsm_=_{C_Vs_to_Am_magnetizacion}',
-                              f'pendiente_HvsI_1/m_=_{pendiente_HvsI}',
-                              f'ordenada_HvsI_A/m_=_{ordenada_HvsI}',
-                              f'frecuencia_ref_Hz_=_{frec_final_m}',
-                              '\nResultados:',
-                              f'tau_s_=_{tau_all:.2e}',
-                              f'dphi_rad_=_{defasaje_all:.2f}',
-                              f'SAR_W/g_=_{SAR_all:.2f}',
-                              f'Hc_kA/m_=_{Coercitividad_all:.2f}',
-                              f'Mr_A/m_=_{Remanencia_all:.2f}',
-                              f'Suceptibilidad_a_M=0_=_{xi_all:.4f}'] #f'Transicion_de_fase_=_{t_tf}\n']
-
-
-
-output_file2=os.path.join(output_dir,os.path.commonprefix(list(fnames_m))+'_resultados.txt')
-ascii.write(resultados_out,output_file2,names=encabezado,overwrite=True,delimiter='\t',formats=formato)
 
 #%% tau/SAR vs Temperatura or tau/SAR vs indx
 if templog:
@@ -1120,15 +1134,20 @@ else:
     plt.suptitle(r'H$_C$ - M$_R$ - $\chi_{M=0}$ - M$_{max}$',fontsize=15)
     plt.savefig(os.path.join(output_dir,os.path.commonprefix(list(fnames_m))+'_Hc_Mr_xi_vs_indx.png'),dpi=300,facecolor='w')
     
+#%% Printeo Resultados del analisis
+print('='*50)
+print(f'Resultados analisis {fecha_graf}\n')
+print(f'Concentracion {concentracion/1000} g/L\n')
 
-print(f'''tau = {tau_all} s
+print(f'''tau = {tau_all:.1f} ns
 SAR = {SAR_all:.0f} W/g
 dphi = {defasaje_all} rad
 
-Coercitivo = {Coercitividad_all:.2f} kA/m
-Remanencia = {Remanencia_all:.0f} A/m
-Susceptibilidad a M=0 = {xi_all:.e}
-      ''')
+Campo Coercitivo = {Coercitividad_all:.2f} kA/m
+Mag Remanente = {Remanencia_all:.0f} A/m
+Mag maxima = {Mag_max_emu:.2f} emu/g
+Susceptibilidad a M=0 = {xi_all:.e}''')
+print('='*50)
 
 #%%%
 end_time = time.time()
@@ -1137,5 +1156,5 @@ print(f'Tiempo de ejecución del script: {(end_time-start_time):6.3f} s.')
 
 
 # %%
-print(f'{Mag_max_all/(concentracion/1000):.0f}')
+
 # %%
